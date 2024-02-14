@@ -1,0 +1,21 @@
+.navbar-default .navbar-brand {color:white;font-size: 26px;}
+.navbar { background-color:#660033;}
+.navbar-default .navbar-nav > li > a {color:white;font-size: 18px;}
+.navbar-default .navbar-nav > .active > a,
+.navbar-default .navbar-nav > .active > a:focus,
+.navbar-default .navbar-nav > .active > a:hover {color:white;background-color:#006699;}
+.navbar-default .navbar-nav > li > a:hover {color:white;background-color:#006699;text-decoration}
+.dropdown-menu {
+  background-color: #660033;font-size: 16px;;
+}
+.dropdown-menu > li > a {color:white}
+.dropdown-menu > .active > a,
+.dropdown-menu > .active > a:focus,
+.dropdown-menu > .active > a:hover {color:white;background-color:#006699;}
+.dropdown-menu > li > a:hover {color:white;background-color:#006699;text-decoration}
+
+.progress-bar {
+             background-color: #660033;
+             }
+
+
