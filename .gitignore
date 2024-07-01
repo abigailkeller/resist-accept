@@ -1,0 +1,7 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+RShiny/www/diagram_effort_colonization.tif
+figures/*.tif
+figures/*.tiff
