@@ -1,6 +1,9 @@
 ###################
-# Create Figure 6 #
+# Create Figure 5 #
 ###################
+
+library(tidyverse)
+library(patchwork)
 
 # read in data
 nonstationary_policies_exp <- readRDS('data/nonstationary_nonstatpolicies_exp_hpenal.rds')
@@ -167,3 +170,4 @@ CCCCC
 final_plot <- alpha_plot+tile_plot_exp+tile_plot_sig+plot_layout(design=layout)
 #ggsave('figures/nonstationarity_timeseries.svg',final_plot,dpi=700,width=5,height=5)
 ggsave('figures/Figure5_nonstationarity_timeseries.tiff',final_plot,dpi=700,width=5,height=5)
+ggsave('figures/Figure5.pdf',final_plot,dpi=700,width=5,height=5, device = cairo_pdf)
