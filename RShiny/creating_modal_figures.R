@@ -30,10 +30,9 @@ exp_loss_params <- list(
   loss_c=1
 )
 
+nonlinear_exp1 <- 4
+nonlinear_exp2 <- 0.5
 
-linear_scale <- 0.005
-action_intersect <- 0.75
-nonlinear_exp <- 4
 
 # ecological change function -- sigmoidal
 reward_sig <- function(s,loss_params){
@@ -44,87 +43,30 @@ reward_exp <- function(s,loss_params){
   loss_params$loss_a*(exp(-loss_params$loss_b*s)-loss_params$loss_c)
 }
 
-#reward -- penalize effort -- linear
-reward_penalize_linear <- function(s,fun,loss_params,linear_scale,action){
-  fun(s,loss_params)-linear_scale*action
-}
-
-#function to get nonlinear scale parameter, given linear scale parameter and action intersection
-get_nonlinear_scale <- function(linear_scale,action_intersect,nonlinear_exp){
-  nonlinear_scale <- linear_scale*action_intersect/(action_intersect^nonlinear_exp)
-  return(nonlinear_scale)
-}
-
 #reward -- penalize high effort -- nonlinear
-reward_penalize_high <- function(s,fun,loss_params,linear_scale,action_intersect,
+reward_penalize_high <- function(s,fun,loss_params,
                                  action,nonlinear_exp){
-  fun(s,loss_params)-get_nonlinear_scale(linear_scale,action_intersect)*action^nonlinear_exp
+  fun(s,loss_params)-action^nonlinear_exp
 }
-penalty_plot <- ggplot()+
-  geom_line(aes(x=actions,y=-linear_scale*actions),color='mediumorchid',linewidth=1.5)+
-  geom_line(aes(x=actions,y=-get_nonlinear_scale(linear_scale,action_intersect,
-                                                 nonlinear_exp)*actions^nonlinear_exp),color='green4',linewidth=1.5)+
-  geom_hline(aes(yintercept=-0.00375),color='red',linewidth=1, linetype = 'dashed')+
-  scale_y_continuous(breaks=c(-0.00375),
-                     labels=c(expression(scale[R])))+
-  ggtitle('Removal cost')+
+
+penalty_plot1 <- ggplot()+
+  geom_line(aes(x=actions,y=-actions^nonlinear_exp1),color='green4',linewidth=1.5)+
+  ggtitle('Nonlinear exponent = 4')+
   labs(x='action',y='reward')+
   theme_minimal()+
   theme(text = element_text(size=15),
-        title = element_text(size=12),
-        axis.text.y = element_text(colour="red"))
-#ggsave('figures/penalty_plot_PICES.tiff',penalty_plot,dpi=200,width=4,height=4)
-
-reward_plot <- ggplot()+
-  geom_line(aes(x=states,y=reward_sig(states,sig_loss_params)),color='black',linetype='dotted',linewidth=1.5)+
-  geom_line(aes(x=states,y=reward_exp(states,exp_loss_params)),color='black',linewidth=1.5)+
-  geom_hline(aes(yintercept=-0.2),color='red',linewidth=1, linetype = 'dashed')+
-  scale_y_continuous(breaks=c(-0.2),
-                     labels=c(expression(scale[E])))+
-  scale_x_continuous(breaks=c(0,1),labels=c(0,'K'))+
-  labs(x='state (EGC density)',y='reward')+
-  ggtitle('Ecological change function')+
+        title = element_text(size=12))
+penalty_plot2 <- ggplot()+
+  geom_line(aes(x=actions,y=-actions^nonlinear_exp2),color='green4',linewidth=1.5)+
+  ggtitle('Nonlinear exponent = 0.5')+
+  labs(x='action',y='reward')+
   theme_minimal()+
   theme(text = element_text(size=15),
-        title = element_text(size=12),
-        axis.text.y = element_text(colour="red"))
+        title = element_text(size=12))
 
-#make fake plots to get line legends
-line_data <- data.frame(x=c(1,2,3),
-                        y=c(1,2,2),
-                        z=c(1,2,2))
-eco_plot <- ggplot()+
-  geom_line(data=line_data,
-             aes(x=x,y=y,linetype=as.factor(y)),linewidth=1.5)+
-  scale_linetype_manual(values = c('solid','dashed'),
-                        labels=c('Exponential','Sigmoidal'))+
-  labs(linetype='Ecological\nchange\nfunction')+
-  theme_minimal()+
-  theme(legend.text=element_text(size=10),
-        legend.title = element_text(size=12,hjust = 0.5),
-        legend.key.width = unit(1.25,'cm'))
-eco_legend <- get_legend(eco_plot)
-action_plot <- ggplot()+
-  geom_line(data=line_data,
-             aes(x=x,y=y,color=as.factor(z)),linewidth=1.5)+
-  scale_color_manual(values=c('green4','mediumorchid'),
-                     labels=c('Nonlinear','Linear'))+
-  labs(color='Removal\ncost\nfunction')+
-  theme_minimal()+
-  theme(legend.text=element_text(size=10),
-        legend.title = element_text(size=12,hjust = 0.5),
-        legend.key.width = unit(1.25,'cm'))
-action_legend <- get_legend(action_plot)
 
-layout <- '
-AAABBBC
-AAABBBC
-AAABBBD
-AAABBBD
-'
-utility_plot <- reward_plot+penalty_plot+eco_legend+action_legend+
-  plot_layout(design=layout)
-ggsave('www/ratio_plot.jpg',utility_plot,dpi=600,width=10,height=4)
+final_plot <- penalty_plot1+penalty_plot2+plot_layout(nrow=1)
+ggsave('www/penalty_plot.jpg',final_plot,dpi=600,width=8,height=4)
 
 
 ###################

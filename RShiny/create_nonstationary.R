@@ -22,7 +22,7 @@ get_transition_nonstat <- function(nregime,alpha){
 }
 
 
-get_nonstat_nonstationary <- function(alpha,ecotype,nregime,ratio,
+get_nonstat_nonstationary <- function(alpha,ecotype,nregime,weights,nonlinear_exp,
                                       discount,states,actions,sig_loss_params,
                                       exp_loss_params,Tmax=40,burnin=25){
   #period length
@@ -57,9 +57,13 @@ get_nonstat_nonstationary <- function(alpha,ecotype,nregime,ratio,
       transition <- readRDS(paste0('transition/',transition_filenames[p]))
       
       if(ecotype == 'Sigmoidal'){
-        utility <- create_utility_sig(states,actions,transition,sig_loss_params,'Nonlinear',ratio)
+        utility <- create_utility_sig(states,actions,transition,
+                                      sig_loss_params,'Nonlinear',weights,
+                                      nonlinear_exp)
       } else if(ecotype == 'Exponential'){
-        utility <- create_utility_exp(states,actions,transition,exp_loss_params,'Nonlinear',ratio)
+        utility <- create_utility_exp(states,actions,transition,
+                                      exp_loss_params,'Nonlinear',weights,
+                                      nonlinear_exp)
       }
       
       # We define a matrix Q that stores the updated action values for #all states (rows)
@@ -93,7 +97,8 @@ get_nonstat_nonstationary <- function(alpha,ecotype,nregime,ratio,
 
 ############
 #create function for getting stationary policies
-get_nonstat_stationary <- function(alpha,ecotype,nregime,discount,ratio,
+get_nonstat_stationary <- function(alpha,ecotype,nregime,discount,
+                                   weights,nonlinear_exp,
                                    states,actions,sig_loss_params,
                                    exp_loss_params,Tmax=40){
   
@@ -109,9 +114,13 @@ get_nonstat_stationary <- function(alpha,ecotype,nregime,discount,ratio,
     transition <- readRDS(paste0('transition/',transition_filenames[i]))
     
     if(ecotype == 'Sigmoidal'){
-      utility <- create_utility_sig(states,actions,transition,sig_loss_params,'Nonlinear',ratio)
+      utility <- create_utility_sig(states,actions,transition,
+                                    sig_loss_params,'Nonlinear',weights,
+                                    nonlinear_exp)
     } else if(ecotype == 'Exponential'){
-      utility <- create_utility_exp(states,actions,transition,exp_loss_params,'Nonlinear',ratio)
+      utility <- create_utility_exp(states,actions,transition,
+                                    exp_loss_params,'Nonlinear',weights,
+                                    nonlinear_exp)
     }
     
     ####

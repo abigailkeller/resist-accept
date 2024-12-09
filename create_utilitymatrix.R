@@ -27,35 +27,34 @@ exp_loss_params <- list(
   loss_c=1
 )
 
-# parameters that scale the relative contribution of removal cost/ecological change in reward function
-linear_scale <- 0.005
-action_intersect <- 0.75
+# exponent for nonlinear cost function
 nonlinear_exp <- 4
 
 # function for ecological change -- sigmoidal
-reward_sig <- function(s,loss_params){
-  loss_params$loss_a/(1+exp(-loss_params$loss_b*(s-loss_params$loss_c)))
+reward_sig <- function(s,loss_params,K){
+  reward <- loss_params$loss_a/(1+exp(-loss_params$loss_b*(s-loss_params$loss_c)))
+  out <- reward/(max(reward)-min(reward))
+  return(out)
 }
 # function for ecological change -- exponential
-reward_exp <- function(s,loss_params){
-  out <- loss_params$loss_a*(exp(-loss_params$loss_b*s)-loss_params$loss_c)
+reward_exp <- function(s,loss_params,K){
+  reward <- loss_params$loss_a*(exp(-loss_params$loss_b*s)-loss_params$loss_c)
+  out <- reward/(max(reward)-min(reward))
   return(out)
 }
 
-# function for removal cost -- linear
-reward_penalize_linear <- function(s,fun,loss_params,linear_scale,action){
-  fun(s,loss_params)-linear_scale*action
+# multi-objective utility function -- linear removal cost
+utility_linear <- function(s,fun,loss_params,
+                           weights,action){
+  out <- weights[1]*fun(s,loss_params)-weights[2]*action
+  return(out)
 }
 
-# function to get nonlinear scale parameter, given linear scale parameter and action intersection
-get_nonlinear_scale <- function(linear_scale,action_intersect,nonlinear_exp){
-  nonlinear_scale <- linear_scale*action_intersect/(action_intersect^nonlinear_exp)
-  return(nonlinear_scale)
-}
-
-# function for removal cost -- nonlinear
-reward_penalize_high <- function(s,fun,loss_params,linear_scale,action_intersect,action,nonlinear_exp){
-  fun(s,loss_params)-get_nonlinear_scale(linear_scale,action_intersect,nonlinear_exp)*action^nonlinear_exp
+# multi-objective utility function -- nonlinear removal cost
+utility_nonlinear <- function(s,fun,loss_params,
+                              weights,action,nonlinear_exp){
+  out <- weights[1]*fun(s,loss_params)-weights[2]*action^nonlinear_exp
+  return(out)
 }
 
 
@@ -66,9 +65,8 @@ reward_penalize_high <- function(s,fun,loss_params,linear_scale,action_intersect
 ###########################
 
 # function that creates utility matrix
-create_utility <- function(states,actions,transition,reward_fun1,loss_params){
-  
-  nonlinear_exp <- 4
+create_utility <- function(states,actions,transition,
+                           reward_fun1,loss_params,weights,nonlinear_exp){
   
   # Utility matrix -- high action penalization
   utility_penal_high <- array(0, dim = c(length(states), length(actions)))
@@ -82,14 +80,13 @@ create_utility <- function(states,actions,transition,reward_fun1,loss_params){
     # Loop on all actions
     for (j in seq_along(actions)) {
       
-      # Compute utility based on entire sprime probability distribution -- action penalization
-      utility_penal_high[k,j] <- sum(transition[k,,j]*reward_penalize_high(states,reward_fun1,loss_params,
-                                                                           linear_scale,action_intersect,actions[j],
-                                                                           nonlinear_exp))
+      # Compute utility based on entire sprime probability distribution -- nonlinear action penalization
+      utility_penal_high[k,j] <- sum(transition[k,,j]*utility_nonlinear(states,reward_fun1,loss_params,
+                                                                        weights,actions[j],nonlinear_exp))
       
-      # Compute utility based on entire sprime probability distribution -- action penalization
-      utility_penal_linear[k,j] <- sum(transition[k,,j]*reward_penalize_linear(states,reward_fun1,loss_params, 
-                                                                               linear_scale, actions[j]))
+      # Compute utility based on entire sprime probability distribution -- linear action penalization
+      utility_penal_linear[k,j] <- sum(transition[k,,j]*utility_linear(states,reward_fun1,loss_params,
+                                                                       weights,actions[j]))
       
     } # end of action loop
   } # end of state loop
@@ -121,7 +118,8 @@ create_utility_output <- function(filename){
   #sigmoidal
   ##create utility matrix
   out_sig <- create_utility(states_scale,actions,transition=readRDS(filename),
-                            reward_fun1=reward_sig,loss_params=sig_loss_params)
+                            reward_fun1=reward_sig,loss_params=sig_loss_params,
+                            weights=c(0.98,0.02),nonlinear_exp)
   #save utility matrix
   for(i in 1:length(type)){
     saveRDS(out_sig[[i]],
@@ -131,7 +129,8 @@ create_utility_output <- function(filename){
   #exponential
   ##create utility matrix
   out_exp <- create_utility(states_scale,actions,transition=readRDS(filename),
-                            reward_fun1=reward_exp,loss_params=exp_loss_params)
+                            reward_fun1=reward_exp,loss_params=exp_loss_params,
+                            weights=c(0.98,0.02),nonlinear_exp)
   #save utility matrix
   for(i in 1:length(type)){
     saveRDS(out_exp[[i]],
@@ -144,7 +143,7 @@ file_list <- c("data/transition_matrices/20240524_TM_0.2_0.025.rds","data/transi
                "data/transition_matrices/20240524_TM_2_0.1.rds","data/transition_matrices/20240524_TM_4_0.125.rds",
                "data/transition_matrices/20240524_TM_15_0.05.rds","data/transition_matrices/20240524_TM_30_0.03.rds",
                "data/transition_matrices/20240524_TM_50_0.025.rds","data/transition_matrices/20240524_TM_75_0.02.rds",
-               "data/transition_matrices/20240524_TM_125_0.016.rds"
+               "data/transition_matrices/20240524_TM_125_0.016.rds","data/transition_matrices/20240524_TM_500_0.01.rds"
 )
 
 

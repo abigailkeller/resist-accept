@@ -5,7 +5,7 @@ account: resist-accept
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 12258806
-bundleId: 8810517
+bundleId: 9490359
 url: https://resist-accept.shinyapps.io/RShiny/
 version: 1
 asMultiple: FALSE

@@ -1,6 +1,6 @@
-create_stationary_df <- function(ecotype,penaltype,ratio,
+create_stationary_df <- function(ecotype,penaltype,weights,
                               states,actions,sig_loss_params,
-                              exp_loss_params,
+                              exp_loss_params,nonlinear_exp,
                               discount_factor,source_pop){
   
   #create empty data frame
@@ -20,7 +20,9 @@ create_stationary_df <- function(ecotype,penaltype,ratio,
     if(ecotype == 'Both' | ecotype == 'Sigmoidal'){
       
       D <- iterate_backward(states,actions,transition,
-                            create_utility_sig(states,actions,transition,sig_loss_params,'Nonlinear',ratio),
+                            create_utility_sig(states,actions,transition,
+                                               sig_loss_params,'Nonlinear',weights,
+                                               nonlinear_exp),
                             beta)
       out_df[nrow(out_df)+1,] <- c('Nonlinear','Sigmoidal',D)
       
@@ -29,7 +31,9 @@ create_stationary_df <- function(ecotype,penaltype,ratio,
     if(ecotype == 'Both' | ecotype == 'Exponential'){
       
       D <- iterate_backward(states,actions,transition,
-                            create_utility_exp(states,actions,transition,exp_loss_params,'Nonlinear',ratio),
+                            create_utility_exp(states,actions,transition,
+                                               exp_loss_params,'Nonlinear',weights,
+                                               nonlinear_exp),
                             beta)
       out_df[nrow(out_df)+1,] <- c('Nonlinear','Exponential',D)
       
@@ -42,7 +46,9 @@ create_stationary_df <- function(ecotype,penaltype,ratio,
     if(ecotype == 'Both' | ecotype == 'Sigmoidal'){
       
       D <- iterate_backward(states,actions,transition,
-                            create_utility_sig(states,actions,transition,sig_loss_params,'Linear',ratio),
+                            create_utility_sig(states,actions,transition,
+                                               sig_loss_params,'Linear',weights,
+                                               nonlinear_exp),
                             beta)
       out_df[nrow(out_df)+1,] <- c('Linear','Sigmoidal',D)
         
@@ -51,7 +57,9 @@ create_stationary_df <- function(ecotype,penaltype,ratio,
     if(ecotype == 'Both' | ecotype == 'Exponential'){
       
       D <- iterate_backward(states,actions,transition,
-                            create_utility_exp(states,actions,transition,exp_loss_params,'Linear',ratio),
+                            create_utility_exp(states,actions,transition,
+                                               exp_loss_params,'Linear',weights,
+                                               nonlinear_exp),
                             beta)
       out_df[nrow(out_df)+1,] <- c('Linear','Exponential',D)
       

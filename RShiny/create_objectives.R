@@ -1,15 +1,15 @@
 create_eco_objective_plots <- function(ecotype,states,sig_loss_params,
-                                       exp_loss_params){
+                                       exp_loss_params,weight){
   
   data <- rbind(
     data.frame(
       state = states,
-      reward = reward_exp(states,exp_loss_params),
+      reward = weight*reward_exp(states,exp_loss_params),
       type = 'Exponential'
     ),
     data.frame(
       state = states,
-      reward = reward_sig(states,sig_loss_params),
+      reward = weight*reward_sig(states,sig_loss_params),
       type = 'Sigmoidal'
     )
   )
@@ -23,7 +23,8 @@ create_eco_objective_plots <- function(ecotype,states,sig_loss_params,
                             labels=c('Exponential','Sigmoidal'))+
       scale_x_continuous(breaks=c(0,1),labels=c(0,'K'),
                          limits=c(0,1.1))+
-      labs(x='state (EGC density)',y='reward',linetype='')+
+      labs(x='state (EGC density)',
+           y=bquote("weighted value (" * w[d] ~ V[d] * ")"),linetype='')+
       ggtitle('Ecological change')+
       theme_minimal()+
       theme(text = element_text(size=16),
@@ -39,7 +40,8 @@ create_eco_objective_plots <- function(ecotype,states,sig_loss_params,
                             labels=c('Sigmoidal'))+
       scale_x_continuous(breaks=c(0,1),labels=c(0,'K'),
                          limits=c(0,1.1))+
-      labs(x='state (EGC density)',y='reward',linetype='')+
+      labs(x='state (EGC density)',
+           y=bquote("weighted value (" * w[d] ~ V[d] * ")"),linetype='')+
       ggtitle('Ecological change')+
       theme_minimal()+
       theme(text = element_text(size=16),
@@ -54,7 +56,8 @@ create_eco_objective_plots <- function(ecotype,states,sig_loss_params,
                             labels=c('Exponential'))+
       scale_x_continuous(breaks=c(0,1),labels=c(0,'K'),
                          limits=c(0,1.1))+
-      labs(x='state (EGC density)',y='reward',linetype='')+
+      labs(x='state (EGC density)',
+           y=bquote("weighted value (" * w[d] ~ V[d] * ")"),linetype='')+
       ggtitle('Ecological change')+
       theme_minimal()+
       theme(text = element_text(size=16),
@@ -64,21 +67,18 @@ create_eco_objective_plots <- function(ecotype,states,sig_loss_params,
   return(plot)
 }
 
-create_cost_objective_plots <- function(penaltype,ratio,actions){
-  
-  action_intersect <- 0.75
-  linear_scale <- ratio*0.2/action_intersect
-  nonlinear_exp <- 4
+create_cost_objective_plots <- function(penaltype,actions,
+                                        nonlinear_exp,weight){
   
   data <- rbind(
     data.frame(
       actions = actions,
-      reward = -get_nonlinear_scale(linear_scale,action_intersect,nonlinear_exp)*actions^nonlinear_exp,
+      reward = -weight*actions^nonlinear_exp,
       type = 'Nonlinear'
     ),
     data.frame(
       actions = actions,
-      reward = -linear_scale*actions,
+      reward = -weight*actions,
       type = 'Linear'
     )
   )
@@ -89,7 +89,8 @@ create_cost_objective_plots <- function(penaltype,ratio,actions){
       geom_line(aes(x=actions,y=reward,color=type),linewidth=1.75)+
       scale_color_manual(values = c('mediumorchid','green4'),
                          labels = c('Linear','Nonlinear'))+
-      labs(x='action (removal effort)',y='reward',color='')+
+      labs(x='action (removal effort)',
+           y=bquote("weighted value (" * w[c] ~ V[c] * ")"),color='')+
       ggtitle('Removal cost')+
       theme_minimal()+
       theme(text = element_text(size=16),)
@@ -100,7 +101,8 @@ create_cost_objective_plots <- function(penaltype,ratio,actions){
       geom_line(aes(x=actions,y=reward,color=type),linewidth=1.75)+
       scale_color_manual(values = c('green4'),
                          labels = c('Nonlinear'))+
-      labs(x='action (removal effort)',y='reward',color='')+
+      labs(x='action (removal effort)',
+           y=bquote("weighted value (" * w[c] ~ V[c] * ")"),color='')+
       ggtitle('Removal cost')+
       theme_minimal()+
       theme(text = element_text(size=16),)
@@ -111,7 +113,8 @@ create_cost_objective_plots <- function(penaltype,ratio,actions){
       geom_line(aes(x=actions,y=reward,color=type),linewidth=1.75)+
       scale_color_manual(values = c('mediumorchid'),
                          labels = c('Linear'))+
-      labs(x='action (removal effort)',y='reward',color='')+
+      labs(x='action (removal effort)',
+           y=bquote("weighted value (" * w[c] ~ V[c] * ")"),color='')+
       ggtitle('Removal cost')+
       theme_minimal()+
       theme(text = element_text(size=16),)
@@ -120,23 +123,15 @@ create_cost_objective_plots <- function(penaltype,ratio,actions){
   return(plot)
 }
 
-#ecological reward -- sigmoidal
+# function for ecological change -- sigmoidal
 reward_sig <- function(s,loss_params){
-  loss_params$loss_a/(1+exp(-loss_params$loss_b*(s-loss_params$loss_c)))
+  reward <- loss_params$loss_a/(1+exp(-loss_params$loss_b*(s-loss_params$loss_c)))
+  out <- reward/(max(reward)-min(reward))
+  return(out)
 }
-
-#ecological reward -- exponential
+# function for ecological change -- exponential
 reward_exp <- function(s,loss_params){
-  loss_params$loss_a*(exp(-loss_params$loss_b*s)-loss_params$loss_c)
-}
-
-#reward -- penalize effort -- linear
-reward_penalize_linear <- function(s,fun,loss_params,linear_scale,action){
-  fun(s,loss_params)-linear_scale*action
-}
-
-#function to get nonlinear scale parameter, given linear scale parameter and action intersection
-get_nonlinear_scale <- function(linear_scale,action_intersect,nonlinear_exp){
-  nonlinear_scale <- linear_scale*action_intersect/(action_intersect^nonlinear_exp)
-  return(nonlinear_scale)
+  reward <- loss_params$loss_a*(exp(-loss_params$loss_b*s)-loss_params$loss_c)
+  out <- reward/(max(reward)-min(reward))
+  return(out)
 }

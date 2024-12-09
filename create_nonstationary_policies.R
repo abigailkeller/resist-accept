@@ -192,7 +192,7 @@ get_stationary_policies <- function(transitions,losstype,penaltype,Tmax){
 
 ##
 ## get nonstationary policies
-nonstationary_policies <- get_policies_transition_nonstationary(transitions=transition_filenames_all,
+nonstationary_policies_exp <- get_policies_transition_nonstationary(transitions=transition_filenames_all,
                                                             losstype='exp',penaltype='hpenal',Tmax=Tmax,burnin=burnin,
                                                             nperiods=length(transition_filenames_all))
 
@@ -200,10 +200,27 @@ nonstationary_policies <- get_policies_transition_nonstationary(transitions=tran
 
 ##
 ## get stationary policies
-stationary_policies <- get_stationary_policies(transitions=transition_filenames_all,
+stationary_policies_exp <- get_stationary_policies(transitions=transition_filenames_all,
                                                       losstype='exp',penaltype='hpenal',Tmax=Tmax+burnin)
 
 # save
-saveRDS(nonstationary_policies,'data/nonstationary_nonstatpolicies_exp_hpenal.rds')
-saveRDS(stationary_policies,'data/nonstationary_statpolicies_exp_hpenal.rds')
+saveRDS(nonstationary_policies_exp,'data/nonstationary_nonstatpolicies_exp_hpenal.rds')
+saveRDS(stationary_policies_exp,'data/nonstationary_statpolicies_exp_hpenal.rds')
+
+##
+## get nonstationary policies
+nonstationary_policies_sig <- get_policies_transition_nonstationary(transitions=transition_filenames_all,
+                                                                losstype='sig',penaltype='hpenal',Tmax=Tmax,burnin=burnin,
+                                                                nperiods=length(transition_filenames_all))
+
+
+
+##
+## get stationary policies
+stationary_policies_sig <- get_stationary_policies(transitions=transition_filenames_all,
+                                               losstype='sig',penaltype='hpenal',Tmax=Tmax+burnin)
+
+# save
+saveRDS(nonstationary_policies_sig,'data/nonstationary_nonstatpolicies_sig_hpenal.rds')
+saveRDS(stationary_policies_sig,'data/nonstationary_statpolicies_sig_hpenal.rds')
   
