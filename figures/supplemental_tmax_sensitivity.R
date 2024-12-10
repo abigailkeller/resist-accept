@@ -155,10 +155,10 @@ legend <- get_legend(legend_plot)
 
 #define plot layout
 layout <- "
-AAABBBEEE
-AAABBBEEE
-CCCDDDFFF
-CCCDDDFFF
+AAABBBCCC
+AAABBBCCC
+DDDEEEFFF
+DDDEEEFFF
 "
 
 finalfigure <- Tmax_25+Tmax_50+Tmax_100+Tmax_150+Tmax_200+legend+plot_layout(design=layout)
